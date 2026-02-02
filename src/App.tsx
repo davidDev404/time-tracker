@@ -1,49 +1,49 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core';
+import { useEffect, useState } from 'react';
+import ProcessCard from './ProcessCard.tsx';
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface ProcessInfo {
+    id: string;
+    name: string;
+    running_time_formatted: string;
+    memory_in_bytes: number;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+const App: React.FC = () => {
+  const [processList, setProcessList] = useState<ProcessInfo[]>([]);
+  const [maxMemoryProcess, setMaxMemoryProcess] = useState<ProcessInfo | null>(null);
+  const [maxRunningProcess, setMaxRunningProcess] = useState<ProcessInfo | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+    const processList = await invoke<ProcessInfo[]>('list_process');
+    const maxMemoryProcess = await invoke<ProcessInfo | null>('max_memory');
+    const maxRunningProcess = await invoke<ProcessInfo | null>('max_running_process');
+
+    setMaxMemoryProcess(maxMemoryProcess);
+    setMaxRunningProcess(maxRunningProcess);
+    setProcessList(processList);
+    }
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <main className='container'>
+      { maxMemoryProcess && <ProcessCard title="Maximum Memory Process" process={maxMemoryProcess} />}
+      { maxRunningProcess && <ProcessCard title="Maximum Running Process" process={maxRunningProcess} />}  
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="process-list-container">
+        {processList.map((process) => (
+          <div key={process.id} className="process-item">
+            <span>{process.name} (ID: {process.id})</span>
+            <span>Running Time: {process.running_time_formatted}</span>
+            <span>Memory: {process.memory_in_bytes} bytes</span>
+          </div>
+        ))}
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
     </main>
   );
 }
