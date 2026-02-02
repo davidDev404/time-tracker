@@ -1,7 +1,37 @@
-# Tauri + React + Typescript
+# Time Tracker
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+A lightweight desktop application for monitoring running processes, built to learn Tauri fundamentals.
 
-## Recommended IDE Setup
+## Tech Stack
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- **Frontend**: React + TypeScript
+- **Backend**: Rust (Tauri)
+- **Process Monitoring**: sysinfo
+
+## Development
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run tauri dev
+
+# Build for production
+npm run tauri build
+```
+
+## Project Structure
+```
+time-tracker/
+├── src/                    # React frontend
+│   ├── App.tsx            # Main component
+│   └── ProcessCard.tsx    # Process display component
+├── src-tauri/             # Rust backend
+│   └── src/
+│       └── lib.rs         # Process monitoring logic
+└── package.json
+```
+
+## License
+
+[WTFPL](http://www.wtfpl.net/) – Do What The Fuck You Want To Public License
