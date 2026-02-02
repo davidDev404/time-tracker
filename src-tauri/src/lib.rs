@@ -16,22 +16,23 @@ struct AppInfo {
 }
 
 fn is_valid(process: &Process) -> bool {
-    let helper_keywords = vec!["helper", "service", "daemon", "agent", "."];
+    let helper_keywords = vec!["helper", "service", "daemon", "agent"];
 
-    if let Some(exe_path) = process.exe().unwrap().to_str() {
-        let is_in_app_dir = APPLICATION_DIRS
-            .iter()
-            .any(|dir| exe_path.starts_with(dir));
+    let exe_path = match process.exe().and_then(|p| p.to_str()) {
+        Some(path) => path,
+        None => return false,
+    };
 
-        let is_helper = helper_keywords.iter()
-            .any(|keyword| process.name().to_string_lossy().to_ascii_lowercase().contains(keyword));
+    let is_in_app_dir = APPLICATION_DIRS
+        .iter()
+        .any(|dir| exe_path.starts_with(dir));
 
-        process.status() == ProcessStatus::Run  
-            && is_in_app_dir
-            && !is_helper
-    } else {
-        false
-    }
+    let is_helper = helper_keywords.iter()
+        .any(|keyword| process.name().to_string_lossy().to_ascii_lowercase().contains(keyword));
+
+    process.status() == ProcessStatus::Run
+        && is_in_app_dir
+        && !is_helper
 }
 
 fn format_running_time(seconds: u64) -> String {
